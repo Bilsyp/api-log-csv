@@ -1,83 +1,38 @@
 import express from "express";
 import { createServer } from "http";
 import fs from "fs";
-import csv from "csv-parser";
 import cors from "cors";
-import createCsvWriter from "csv-writer";
+import Papa from "papaparse";
 
 const app = express();
-const createCsv = createCsvWriter.createObjectCsvWriter;
-const server = new createServer(app);
+const server = createServer(app);
 
 app.use(cors());
-app.use(express.json()); // Middleware untuk menguraikan data JSON
+app.use(express.json());
 
 app.post("/api/addtocsv", (req, res) => {
-  const receivedData = req.body; // Data yang dikirim dari klien
+  const receivedData = req.body;
 
-  // Baca data yang sudah ada dari file CSV
+  // Read existing data from CSV file
   const existingData = [];
   fs.createReadStream("log.csv")
-    .pipe(csv())
+    .pipe(Papa.parse(Papa.NODE_STREAM_INPUT, { header: true }))
     .on("data", (row) => {
       existingData.push(row);
     })
     .on("end", () => {
-      // Tambahkan data yang diterima ke dalam data yang sudah ada
+      // Add received data to existing data
       existingData.push(receivedData);
 
-      // Tulis kembali data ke dalam file CSV
-      const csvWriter = createCsv({
-        path: "log.csv",
-        header: [
-          { id: "Resolution", title: "Resolution" },
-          { id: "Throughput", title: "Throughput" },
-          { id: "BufferTime", title: "BufferTime" },
-          { id: "Delay", title: "Delay" },
-          { id: "Latency", title: "Latency" },
-          { id: "Rtt", title: "Rtt" },
-          { id: "DecodedFrames", title: "DecodedFrames" },
-          { id: "DecodedFrames", title: "DecodedFrames" },
-          { id: "PlayTime", title: "PlayTime" },
-          { id: "PauseTime", title: "PauseTime" },
-          { id: "StreamBandwidth", title: "StreamBandwidth" },
-          { id: "EstimatedBandwidth", title: "EstimatedBandwidth" },
-        ],
-      });
+      // Write data back to CSV file
+      const csvData = Papa.unparse(existingData, { header: true });
+      fs.writeFileSync("log.csv", csvData);
 
-      csvWriter
-        .writeRecords(existingData)
-        .then(() => {
-          console.log("Data berhasil ditambahkan ke file CSV");
-          res.sendStatus(200); // Kirim respons sukses
-        })
-        .catch((error) => {
-          console.error("Gagal menambahkan data ke file CSV:", error);
-          res.sendStatus(500); // Kirim respons kesalahan server
-        });
+      console.log("Data berhasil ditambahkan ke file CSV");
+      res.sendStatus(200);
     });
 });
 
-// app.post("/api/logs", (req, res) => {
-//   const receivedData = req.body; // Data yang dikirim dari klien
-
-//   // Lakukan sesuatu dengan data yang diterima, misalnya, simpan ke dalam log file
-//   const logEntry = `${new Date().toISOString()}: ${JSON.stringify(
-//     receivedData
-//   )}`;
-
-//   // Simpan data ke dalam log file (contoh: log.txt)
-//   fs.appendFile("log.txt", logEntry + "\n", (err) => {
-//     if (err) {
-//       console.error("Gagal menyimpan data ke log file:", err);
-//       res.sendStatus(500); // Kirim respons kesalahan server
-//     } else {
-//       console.log("Data berhasil disimpan ke log file:", logEntry);
-//       res.sendStatus(200); // Kirim respons sukses
-//     }
-//   });
-// });
-
 server.listen(3000, () => {
-  console.log("Server bejalan di port 3000");
+  console.log("Server berjalan di port 3000");
 });
