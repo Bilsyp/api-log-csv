@@ -31,11 +31,17 @@ app.post("/api/addtocsv", (req, res) => {
         path: "log.csv",
         header: [
           { id: "Resolution", title: "Resolution" },
-          { id: "Bandwidth", title: "Bandwidth" },
-          { id: "Frames", title: "Frames" },
+          { id: "Throughput", title: "Throughput" },
+          { id: "BufferTime", title: "BufferTime" },
+          { id: "Delay", title: "Delay" },
           { id: "Latency", title: "Latency" },
-          { id: "RTT", title: "RTT" },
-          { id: "Cubic", title: "Cubic" },
+          { id: "Rtt", title: "Rtt" },
+          { id: "DecodedFrames", title: "DecodedFrames" },
+          { id: "DecodedFrames", title: "DecodedFrames" },
+          { id: "PlayTime", title: "PlayTime" },
+          { id: "PauseTime", title: "PauseTime" },
+          { id: "StreamBandwidth", title: "StreamBandwidth" },
+          { id: "EstimatedBandwidth", title: "EstimatedBandwidth" },
         ],
       });
 
